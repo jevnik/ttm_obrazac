@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Podaci o motoru · TTM Engines</title>
+<meta name="description" content="Obrazac za podatke o motoru – TTM Engines">
+<meta name="theme-color" content="#0E5D98">
+<link rel="icon" href="logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:ital,wght@0,600;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --blue:#0E5D98; --blue-deep:#0A4673; --blue-tint:#E7F0F8;
+  --yellow:#F5C400; --ink:#13243A; --muted:#5D6B7A;
+  --line:#D5DBE2; --paper:#F2F4F6; --white:#FFFFFF;
+  --err:#B42318; --ok:#1E7A46;
+  --body:"Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --cond:"Barlow Semi Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+/* Header */
+.top{background:var(--white);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:18px 20px 22px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.top img{height:62px;width:auto;display:block}
+.top h1{font-family:var(--cond);font-style:italic;font-weight:700;font-size:clamp(1.9rem,4vw,2.6rem);line-height:1;margin:0;color:var(--blue)}
+.top p{margin:6px 0 0;color:var(--muted);max-width:60ch;font-size:.98rem}
+
+/* Layout */
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:959px){.wrap{display:block;padding:0 0 60px}}
+
+/* Section nav */
+.nav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);margin-top:28px}
+.nav ol{list-style:none;margin:0;padding:0}
+.nav a{display:block;text-decoration:none;color:var(--ink);padding:9px 12px 10px;border-left:3px solid transparent;border-radius:0 6px 6px 0}
+.nav a:hover{background:var(--white)}
+.nav a.on{border-left-color:var(--blue);background:var(--white)}
+.nav .nt{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:.95rem}
+.nav .nc{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
+.nav .bar{height:4px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.nav .bar i{display:block;height:100%;width:0;background:var(--yellow);transition:width .25s}
+.nav a.done .nc{color:var(--ok)}
+@media (max-width:959px){
+  .nav{top:0;margin:0;z-index:5;background:var(--white);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+  .nav ol{display:flex;overflow-x:auto;gap:4px;padding:8px 12px;scrollbar-width:none}
+  .nav ol::-webkit-scrollbar{display:none}
+  .nav a{border-left:0;border-bottom:3px solid transparent;border-radius:6px 6px 0 0;padding:6px 10px 6px;white-space:nowrap}
+  .nav a.on{border-bottom-color:var(--blue);background:var(--blue-tint)}
+  .nav .nt{gap:10px;font-size:.9rem}
+  .nav .bar{display:none}
+}
+
+/* Sections */
+main{min-width:0}
+.sec{background:var(--white);border:1px solid var(--line);border-radius:10px;margin-top:28px;padding:6px 24px 14px}
+@media (max-width:959px){.sec{border-radius:0;border-left:0;border-right:0;margin-top:14px;padding:4px 16px 10px}}
+.sec h2{font-family:var(--cond);font-style:italic;font-weight:700;font-size:1.65rem;line-height:1.1;color:var(--blue);margin:18px 0 6px}
+.sec .lead{margin:0 0 6px;color:var(--muted);font-size:.95rem;max-width:65ch}
+
+/* Field rows */
+.field{display:grid;grid-template-columns:minmax(0,1fr) 15.5rem;gap:6px 20px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
+.sec h2 + .field,.sec .lead + .field{border-top:0}
+.field.wide{grid-template-columns:minmax(0,1fr)}
+.lbl{font-weight:600;line-height:1.3}
+.lbl .sub{display:block;font-weight:400;font-size:.88rem;color:var(--muted);margin-top:2px}
+.lbl .req{color:var(--err);margin-left:2px}
+@media (max-width:640px){.field{grid-template-columns:minmax(0,1fr)}}
+
+/* Inputs: value + unit readout */
+.inp{display:flex;align-items:stretch;border:1.5px solid #B9C3CE;border-radius:7px;background:var(--white);overflow:hidden;min-height:46px}
+.inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-tint)}
+.inp input,.inp select,.inp textarea{flex:1;min-width:0;border:0;background:transparent;padding:10px 12px;outline:none}
+.inp input.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.inp .unit{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:3.4rem;padding:0 10px;background:var(--blue-tint);color:var(--blue-deep);font-weight:600;font-size:.92rem;border-left:1px solid #C9D9E8}
+.inp select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:38px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%230E5D98' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+.inp textarea{min-height:96px;resize:vertical}
+.field.bad .inp{border-color:var(--err)}
+.err{color:var(--err);font-size:.86rem;margin:4px 0 0;min-height:0}
+.err:empty{display:none}
+.hint{grid-column:1/-1;font-size:.93rem}
+.hint summary{cursor:pointer;color:var(--blue);font-weight:600;width:max-content;list-style:none}
+.hint summary::-webkit-details-marker{display:none}
+.hint summary::before{content:"+";display:inline-block;width:1.1em;font-weight:700}
+.hint[open] summary::before{content:"−"}
+.hint .hb{margin:6px 0 2px;padding:10px 14px;background:var(--paper);border-left:3px solid var(--yellow);border-radius:0 6px 6px 0;max-width:68ch}
+.hint .hb img{max-width:100%;height:auto;display:block;margin-top:8px;border-radius:4px}
+
+/* Grid (exhaust) */
+.xg{border-top:1px solid var(--line);padding:12px 0 6px}
+.xg-row{display:grid;grid-template-columns:minmax(7rem,1fr) repeat(var(--cols),minmax(0,9.5rem));gap:10px;align-items:center;padding:6px 0}
+.xg-head{font-size:.86rem;color:var(--muted);font-weight:600;padding-bottom:0}
+.xg-head span:not(:first-child){text-align:center}
+.xg-rl{font-weight:600}
+.xg .cl{display:none}
+.xg .inp{min-height:42px}
+.xg .inp input{padding:8px 8px}
+.xg .inp .unit{min-width:2.6rem;padding:0 7px;font-size:.85rem}
+.xg .bad .inp{border-color:var(--err)}
+@media (max-width:640px){
+  .xg-head{display:none}
+  .xg-row{grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .xg-row:last-child{border-bottom:0}
+  .xg-rl{grid-column:1/-1}
+  .xg .cl{display:block;font-size:.78rem;color:var(--muted);margin-bottom:3px;line-height:1.2}
+  .xg .inp .unit{display:none}
+}
+
+/* Submit */
+.consent{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--line);cursor:pointer}
+.consent input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--blue);flex:0 0 auto}
+.consent span{font-size:.95rem}
+.consent.bad span{color:var(--err)}
+.actions{display:flex;flex-wrap:wrap;gap:12px;padding:8px 0 10px}
+.btn{border:0;border-radius:8px;padding:14px 26px;font-weight:600;cursor:pointer;font-size:1.02rem}
+.btn-main{background:var(--blue);color:#fff;box-shadow:inset 0 -4px 0 var(--yellow)}
+.btn-main:hover{background:var(--blue-deep)}
+.btn-main:disabled{opacity:.6;cursor:wait}
+.btn-sec{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-sec:hover{background:var(--blue-tint)}
+@media (max-width:640px){.btn{flex:1 1 100%}}
+.status{margin:6px 0 4px;padding:12px 14px;border-radius:7px;font-weight:500;display:none}
+.status.show{display:block}
+.status.ok{background:#E3F4EA;color:var(--ok)}
+.status.warn{background:#FFF6D6;color:#6B5400}
+.status.bad{background:#FDECEA;color:var(--err)}
+.saved{font-size:.85rem;color:var(--muted);margin:2px 0 0}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* Done screen */
+.done{background:var(--white);border:1px solid var(--line);border-radius:10px;margin-top:28px;padding:32px 24px}
+.done h2{font-family:var(--cond);font-style:italic;font-weight:700;font-size:2rem;color:var(--blue);margin:0 0 8px}
+.done p{max-width:60ch}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media print{.nav,.actions,.top p{display:none}.wrap{display:block}.sec{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <img src="logo.jpg" alt="TTM Engines" width="198" height="92">
+    <div>
+      <h1>Podaci o motoru</h1>
+      <p>Upišite podatke koje znate. Polja koja ne znate ostavite prazna, izmjerit ćemo ih u radionici. Decimale možete pisati sa zarezom. Unos se sprema na ovom uređaju dok ne pošaljete obrazac.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="nav" aria-label="Dijelovi obrasca"><ol id="nav"></ol></nav>
+  <main>
+    <form id="form" novalidate autocomplete="on">
+      <div id="sections"></div>
+
+      <section class="sec" id="sec-slanje" data-sec="slanje">
+        <h2>Slanje</h2>
+        <div class="field wide">
+          <label class="lbl" for="f-napomena">Napomena<span class="sub">Sve što bi nam moglo pomoći: dosadašnje preinake, problemi, ciljevi.</span></label>
+          <div class="ctl"><div class="inp"><textarea id="f-napomena" name="napomena" data-key="napomena"></textarea></div></div>
+        </div>
+        <label class="consent" id="consentRow">
+          <input type="checkbox" id="consent">
+          <span>Slažem se da TTM Engines koristi ove podatke za izradu ponude i odabir dijelova. Podaci se pohranjuju u Google Drive i ne dijele se s trećim stranama.</span>
+        </label>
+        <div class="hp" aria-hidden="true"><label>Web stranica <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <div class="actions">
+          <button type="submit" class="btn btn-main" id="send">Pošalji podatke</button>
+          <button type="button" class="btn btn-sec" id="dl">Preuzmi kopiju (CSV)</button>
+        </div>
+        <p class="saved" id="saved"></p>
+      </section>
+    </form>
+
+    <section class="done" id="done" hidden>
+      <h2>Podaci su poslani</h2>
+      <p>Hvala. Pregledat ćemo podatke i javiti vam se. Ako želite kopiju za sebe, preuzmite je prije nego što započnete novi obrazac.</p>
+      <div class="actions">
+        <button type="button" class="btn btn-sec" id="dl2">Preuzmi kopiju (CSV)</button>
+        <button type="button" class="btn btn-main" id="newForm">Ispuni novi obrazac</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+   POSTAVKE
+   ENDPOINT: URL web aplikacije iz Google Apps Scripta (završava na /exec).
+   ===================================================================== */
+const CONFIG = {
+  endpoint: "",
+  storageKey: "ttm-obrazac-v1",
+  shop: "TTM Engines"
+};
+
+/* =====================================================================
+   PITANJA (generirano iz fill-empty_form.xlsx)
+   type: "num" (decimalni broj), "int" (cijeli broj), "text", "select",
+         "email", "tel"
+   unit: jedinica prikazana uz polje
+   hint: objašnjenje "Kako izmjeriti" (može sadržavati HTML, npr. <img>)
+   grid: {row, col} -> polja se prikazuju kao tablica (auspuh)
+   ===================================================================== */
+const SECTIONS = [
+  { id: "kontakt", title: "Kontakt", lead: "Kako bismo vas mogli kontaktirati u vezi ponude.", fields: [
+    { key: "ime", label: "Ime i prezime", type: "text", required: true, auto: "name" },
+    { key: "telefon", label: "Telefon", type: "tel", auto: "tel" },
+    { key: "email", label: "E-mail", type: "email", auto: "email" },
+    { key: "vozilo", label: "Vozilo", sub: "Marka, model i godina", type: "text" },
+    { key: "oznaka_motora", label: "Oznaka motora", sub: "Npr. ABF, B18C, M52B28", type: "text" }
+  ]},
+  { id: "motor", title: "Osnovni podaci o motoru", fields: [
+    { key: "max_rpm", label: "Maksimalni okretaji motora (max RPM)", unit: "o/min", type: "int", hint: "" },
+    { key: "broj_cilindara", label: "Broj cilindara", type: "int", hint: "" },
+    { key: "promjer_cilindra", label: "Promjer cilindra", unit: "mm", type: "num", hint: "" },
+    { key: "hod_klipa", label: "Hod klipa", unit: "mm", type: "num", hint: "" },
+    { key: "duljina_klipnjace", label: "Duljina klipnjače", unit: "mm", type: "num", hint: "" },
+    { key: "pomak_bolcna", label: "Pomak bolcna", unit: "mm", type: "num", hint: "" }
+  ]},
+  { id: "ventili", title: "Ventili", fields: [
+    { key: "broj_usisnih", label: "Broj usisnih ventila po cilindru", type: "select", options: ["1", "2", "3"], hint: "" },
+    { key: "broj_ispusnih", label: "Broj ispušnih ventila po cilindru", type: "select", options: ["1", "2", "3"], hint: "" },
+    { key: "promjer_usisnog", label: "Promjer usisnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "promjer_ispusnog", label: "Promjer ispušnog ventila", unit: "mm", type: "num", hint: "" }
+  ]},
+  { id: "usis", title: "Usis", fields: [
+    { key: "oblik_usisa", label: "Oblik usisa", type: "select", options: ["Kratke trubice za visoke okretaje", "Dugačke trubice za niže okretaje", "Airbox"], hint: "" },
+    { key: "kut_usisa", label: "Kut usisa", unit: "°", type: "num", hint: "" },
+    { key: "duljina_usisa", label: "Duljina usisa", unit: "cm", type: "num", hint: "" },
+    { key: "min_povrsina_kanala", label: "Minimalna površina kanala za jedan ventil", unit: "mm²", type: "num", hint: "" },
+    { key: "max_povrsina_ulaz", label: "Maksimalna površina na ulazu u kanal", unit: "mm²", type: "num", hint: "" },
+    { key: "kompresor", label: "Kompresor", sub: "Nema, turbo ili mehanički kompresor; model ako je poznat", type: "text", hint: "" }
+  ]},
+  { id: "bregaste", title: "Bregaste osovine", fields: [
+    { key: "bregasta", label: "Bregasta osovina", sub: "Proizvođač i oznaka", type: "text", hint: "" },
+    { key: "max_lift", label: "Maksimalni lift ventila", unit: "mm", type: "num", hint: "" },
+    { key: "zazor", label: "Zazor ventila", unit: "mm", type: "num", hint: "" },
+    { key: "omjer_klackalica", label: "Omjer klackalica (ako ih ima)", type: "num", hint: "" },
+    { key: "ivo", label: "IVO", sub: "Otvaranje usisnog ventila", unit: "°", type: "num", hint: "" },
+    { key: "ivc", label: "IVC", sub: "Zatvaranje usisnog ventila", unit: "°", type: "num", hint: "" },
+    { key: "evo", label: "EVO", sub: "Otvaranje ispušnog ventila", unit: "°", type: "num", hint: "" },
+    { key: "evc", label: "EVC", sub: "Zatvaranje ispušnog ventila", unit: "°", type: "num", hint: "" },
+    { key: "max_lift_tdc", label: "Max lift od TDC", unit: "°", type: "num", hint: "" }
+  ]},
+  { id: "komora", title: "Kompresija i komora izgaranja", fields: [
+    { key: "omjer_kompresije", label: "Omjer kompresije", sub: "Npr. 10,5", type: "num", hint: "" },
+    { key: "termalni_premazi", label: "Termalni premazi", type: "text", hint: "" },
+    { key: "oblik_komore", label: "Oblik komore izgaranja", unit: "mm", type: "text", hint: "" }
+  ]},
+  { id: "gorivo", title: "Gorivo", fields: [
+    { key: "oktanski_broj", label: "Oktanski broj goriva", unit: "oktan", type: "num", hint: "" },
+    { key: "afr", label: "AFR", sub: "Omjer zraka i goriva", type: "num", hint: "" }
+  ]},
+  { id: "auspuh", title: "Auspuh", fields: [
+    { key: "oblik_auspuha", label: "Oblik auspuha", unit: "mm", type: "text", hint: "" },
+    ...[["prim","Primarni"],["sek","Sekundarni"],["ter","Tercijarni"],["kol1","1. kolektor"],["kol2","2. kolektor"]].flatMap(([k, r]) => [
+      { key: `aus_${k}_pp`, label: `${r} promjer početak`, unit: "mm", type: "num", grid: { row: r, col: "Promjer početak" } },
+      { key: `aus_${k}_pk`, label: `${r} promjer kraj`, unit: "mm", type: "num", grid: { row: r, col: "Promjer kraj" } },
+      { key: `aus_${k}_d`,  label: `${r} duljina`, unit: "mm", type: "num", grid: { row: r, col: "Duljina" } }
+    ])
+  ]}
+];
+
+/* ===================================================================== */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ALL = SECTIONS.flatMap(s => s.fields.map(f => ({ ...f, section: s.title })))
+  .concat([{ key: "napomena", label: "Napomena", type: "text", section: "Slanje" }]);
+const BYKEY = Object.fromEntries(ALL.map(f => [f.key, f]));
+
+const load = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const drop = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const K_DATA = CONFIG.storageKey, K_PEND = CONFIG.storageKey + "-pending";
+
+/* ---------- Render ---------- */
+function control(f) {
+  const id = "f-" + f.key;
+  const unit = f.unit ? `<span class="unit">${esc(f.unit)}</span>` : "";
+  const ac = f.auto ? ` autocomplete="${f.auto}"` : ` autocomplete="off"`;
+  if (f.type === "select") {
+    return `<div class="inp"><select id="${id}" data-key="${f.key}"><option value="">Odaberite</option>${
+      f.options.map(o => `<option>${esc(o)}</option>`).join("")}</select>${unit}</div>`;
+  }
+  const isNum = f.type === "num" || f.type === "int";
+  const type = f.type === "email" ? "email" : f.type === "tel" ? "tel" : "text";
+  const im = f.type === "int" ? ' inputmode="numeric"' : f.type === "num" ? ' inputmode="decimal"' : "";
+  return `<div class="inp"><input id="${id}" type="${type}" data-key="${f.key}"${im}${ac}${isNum ? ' class="num"' : ""}${f.grid ? ` aria-label="${esc(f.label)}"` : ""}>${unit}</div>`;
+}
+
+function renderSection(s) {
+  let html = `<section class="sec" id="sec-${s.id}" data-sec="${s.id}"><h2>${esc(s.title)}</h2>`;
+  if (s.lead) html += `<p class="lead">${esc(s.lead)}</p>`;
+  const plain = s.fields.filter(f => !f.grid), grid = s.fields.filter(f => f.grid);
+  for (const f of plain) {
+    html += `<div class="field" data-field="${f.key}">
+      <label class="lbl" for="f-${f.key}">${esc(f.label)}${f.required ? '<span class="req" aria-hidden="true">*</span>' : ""}${f.sub ? `<span class="sub">${esc(f.sub)}</span>` : ""}</label>
+      <div class="ctl">${control(f)}<p class="err"></p></div>
+      ${f.hint ? `<details class="hint"><summary>Kako izmjeriti</summary><div class="hb">${f.hint}</div></details>` : ""}
+    </div>`;
+  }
+  if (grid.length) {
+    const rows = [...new Set(grid.map(f => f.grid.row))], cols = [...new Set(grid.map(f => f.grid.col))];
+    const u = grid[0].unit ? ` (${esc(grid[0].unit)})` : "";
+    html += `<div class="xg" style="--cols:${cols.length}"><div class="xg-row xg-head" aria-hidden="true"><span></span>${cols.map(c => `<span>${esc(c)}</span>`).join("")}</div>`;
+    for (const r of rows) {
+      html += `<div class="xg-row"><div class="xg-rl">${esc(r)}</div>`;
+      for (const c of cols) {
+        const f = grid.find(g => g.grid.row === r && g.grid.col === c);
+        html += f ? `<div data-field="${f.key}"><span class="cl">${esc(c)}${u}</span>${control(f)}<p class="err"></p></div>` : "<div></div>";
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+  return html + `</section>`;
+}
+
+$("#sections").innerHTML = SECTIONS.map(renderSection).join("");
+const NAVSECS = SECTIONS.map(s => ({ id: s.id, title: s.title, keys: s.fields.map(f => f.key) }))
+  .concat([{ id: "slanje", title: "Slanje", keys: [] }]);
+$("#nav").innerHTML = NAVSECS.map(s =>
+  `<li><a href="#sec-${s.id}" data-nav="${s.id}"><span class="nt"><span>${esc(s.title)}</span>${s.keys.length ? `<span class="nc">0/${s.keys.length}</span>` : ""}</span>${s.keys.length ? '<span class="bar"><i></i></span>' : ""}</a></li>`).join("");
+
+/* ---------- State ---------- */
+const inputs = () => [...document.querySelectorAll("[data-key]")];
+function getAnswers() {
+  const a = {};
+  for (const el of inputs()) { const v = el.value.trim(); if (v) a[el.dataset.key] = v; }
+  return a;
+}
+function setAnswers(a) { for (const el of inputs()) el.value = (a && a[el.dataset.key]) || ""; }
+
+function updateProgress() {
+  const a = getAnswers();
+  for (const s of NAVSECS) {
+    if (!s.keys.length) continue;
+    const n = s.keys.filter(k => a[k]).length, link = $(`[data-nav="${s.id}"]`);
+    $(".nc", link).textContent = `${n}/${s.keys.length}`;
+    $(".bar i", link).style.width = (100 * n / s.keys.length) + "%";
+    link.classList.toggle("done", n === s.keys.length);
+  }
+}
+
+let saveTimer;
+function persist() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const ok = save(K_DATA, { answers: getAnswers(), consent: $("#consent").checked, t: Date.now() });
+    $("#saved").textContent = ok ? "Spremljeno na ovom uređaju u " + new Date().toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit" }) + "." : "";
+  }, 400);
+}
+
+/* ---------- Validation ---------- */
+const NUM = /^-?\d+([.,]\d+)?$/, INT = /^\d+$/, MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function check(el) {
+  const f = BYKEY[el.dataset.key]; if (!f) return true;
+  const v = el.value.trim(); let msg = "";
+  if (f.required && !v) msg = "Ovo polje je obavezno.";
+  else if (v && f.type === "num" && !NUM.test(v)) msg = "Upišite broj, npr. 86,5";
+  else if (v && f.type === "int" && !INT.test(v)) msg = "Upišite cijeli broj.";
+  else if (v && f.type === "email" && !MAIL.test(v)) msg = "Provjerite e-mail adresu.";
+  const box = el.closest("[data-field]");
+  if (box) { box.classList.toggle("bad", !!msg); const e = $(".err", box); if (e) e.textContent = msg; }
+  return !msg;
+}
+
+/* ---------- Status ---------- */
+function status(kind, text) {
+  const s = $("#status");
+  s.className = "status" + (kind ? " show " + kind : "");
+  s.textContent = text || "";
+}
+
+/* ---------- Payload / CSV ---------- */
+function toNumber(f, v) {
+  if ((f.type === "num" || f.type === "int") && NUM.test(v)) return Number(v.replace(",", "."));
+  return v;
+}
+function buildPayload() {
+  const a = getAnswers(), answers = {};
+  for (const k in a) if (BYKEY[k]) answers[k] = toNumber(BYKEY[k], a[k]);
+  return {
+    id: (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2)),
+    createdAt: new Date().toISOString(),
+    website: $("#website").value,
+    fields: ALL.map(f => ({ key: f.key, label: f.label + (f.unit ? ` (${f.unit})` : "") })),
+    answers
+  };
+}
+function downloadCSV() {
+  const a = getAnswers(), q = s => `"${String(s).replace(/"/g, '""')}"`;
+  const rows = [["Dio", "Podatak", "Vrijednost", "Jedinica"]]
+    .concat(ALL.map(f => [f.section, f.label, a[f.key] || "", f.unit || ""]));
+  const csv = "\uFEFF" + rows.map(r => r.map(q).join(";")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const name = "podaci-o-motoru" + (a.oznaka_motora ? "-" + a.oznaka_motora.replace(/[^\w-]+/g, "_") : "") + ".csv";
+  const link = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ---------- Sending ---------- */
+let sending = false;
+async function send(payload) {
+  if (!CONFIG.endpoint) throw Object.assign(new Error("noendpoint"), { fatal: true });
+  const ctrl = new AbortController(), t = setTimeout(() => ctrl.abort(), 25000);
+  try {
+    const r = await fetch(CONFIG.endpoint, { method: "POST", body: JSON.stringify(payload), signal: ctrl.signal });
+    const j = await r.json();
+    if (!j.ok) throw Object.assign(new Error(j.error || "server"), { fatal: true });
+    return j;
+  } finally { clearTimeout(t); }
+}
+
+async function trySendPending(auto) {
+  const p = load(K_PEND);
+  if (!p || sending) return;
+  sending = true; $("#send").disabled = true;
+  if (!auto) status("warn", "Šaljem…");
+  try {
+    await send(p);
+    drop(K_PEND);
+    $("#form").hidden = true; $("#done").hidden = false;
+    $("#done").scrollIntoView({ behavior: "smooth" });
+  } catch (e) {
+    if (e.fatal && e.message === "noendpoint") {
+      drop(K_PEND);
+      status("bad", "Obrazac još nije povezan s tablicom za primanje podataka. Preuzmite kopiju (CSV) i pošaljite nam je e-mailom.");
+    } else if (e.fatal) {
+      drop(K_PEND);
+      status("bad", "Slanje nije uspjelo (" + e.message + "). Pokušajte ponovno ili preuzmite kopiju (CSV) i pošaljite nam je e-mailom.");
+    } else {
+      status("warn", "Nema internetske veze. Podaci su spremljeni i poslat će se automatski čim se veza vrati. Ostavite ovu stranicu otvorenom ili je kasnije ponovno otvorite.");
+    }
+  } finally { sending = false; $("#send").disabled = false; }
+}
+
+/* ---------- Events ---------- */
+$("#form").addEventListener("input", e => {
+  if (e.target.dataset.key) { updateProgress(); persist(); if (e.target.closest(".bad")) check(e.target); }
+  if (e.target.id === "consent") { persist(); $("#consentRow").classList.remove("bad"); }
+});
+$("#form").addEventListener("change", e => { if (e.target.dataset.key) { updateProgress(); persist(); } });
+$("#form").addEventListener("focusout", e => { if (e.target.dataset.key) check(e.target); });
+
+$("#form").addEventListener("submit", e => {
+  e.preventDefault();
+  let first = null;
+  for (const el of inputs()) if (!check(el) && !first) first = el;
+  const a = getAnswers();
+  if (!first && !a.telefon && !a.email) {
+    const el = $("#f-telefon"), box = el.closest("[data-field]");
+    box.classList.add("bad"); $(".err", box).textContent = "Upišite telefon ili e-mail.";
+    first = el;
+  }
+  if (!first && !$("#consent").checked) { $("#consentRow").classList.add("bad"); first = $("#consent"); }
+  if (first) {
+    status("bad", "Provjerite označena polja.");
+    first.focus({ preventScroll: true }); first.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  save(K_PEND, buildPayload());
+  trySendPending(false);
+});
+
+$("#dl").addEventListener("click", downloadCSV);
+$("#dl2").addEventListener("click", downloadCSV);
+$("#newForm").addEventListener("click", () => {
+  drop(K_DATA); setAnswers({}); $("#consent").checked = false;
+  updateProgress(); status(); $("#saved").textContent = "";
+  $("#done").hidden = true; $("#form").hidden = false; window.scrollTo(0, 0);
+});
+window.addEventListener("online", () => trySendPending(true));
+window.addEventListener("beforeunload", e => { if (load(K_PEND)) { e.preventDefault(); e.returnValue = ""; } });
+
+/* Highlight current section in nav */
+const io = new IntersectionObserver(entries => {
+  for (const en of entries) if (en.isIntersecting) {
+    document.querySelectorAll(".nav a").forEach(a => a.classList.toggle("on", a.dataset.nav === en.target.dataset.sec));
+    const on = $(".nav a.on"); if (on && innerWidth < 960) on.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+}, { rootMargin: "-30% 0px -60% 0px" });
+document.querySelectorAll(".sec").forEach(s => io.observe(s));
+
+/* ---------- Start ---------- */
+const saved = load(K_DATA);
+if (saved) { setAnswers(saved.answers); $("#consent").checked = !!saved.consent; }
+updateProgress();
+if (load(K_PEND)) {
+  status("warn", "Imate neposlane podatke. Šaljem ih ponovno…");
+  trySendPending(true);
+}
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
