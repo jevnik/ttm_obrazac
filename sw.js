@@ -1,7 +1,8 @@
 // Offline cache: the form keeps loading without signal after the first visit.
 // Network first, so updates you push to GitHub arrive as soon as there is a connection.
-const CACHE = "ttm-obrazac-v1";
-const FILES = ["./", "index.html", "logo.jpg"];
+const CACHE = "ttm-obrazac-v12";
+const FILES = ["./", "index.html", "slike/logo.jpg", "slike/bore.jpg", "slike/stroke.jpg", "slike/conrod.jpg", "slike/pin_offset.jpg", "slike/valve_head_diam.jpg", "slike/min_area_port.jpg", "slike/max_intake_area.jpg", "slike/cam_lift.jpg", "slike/valv_clear.jpg", "slike/cam_data.jpg",
+  "slike/flags/hr.svg", "slike/flags/uk.svg", "slike/flags/it.svg", "slike/flags/de.svg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));

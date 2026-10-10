@@ -36,6 +36,15 @@ button,input,select,textarea{font:inherit;color:inherit}
 .top h1{font-family:var(--cond);font-style:italic;font-weight:700;font-size:clamp(1.9rem,4vw,2.6rem);line-height:1;margin:0;color:var(--blue)}
 .top p{margin:6px 0 0;color:var(--muted);max-width:60ch;font-size:.98rem}
 
+/* Language picker */
+.top-in{position:relative}
+.langs{position:absolute;top:18px;right:20px;display:flex;gap:8px}
+.langs button{padding:0;border:0;background:none;cursor:pointer;width:34px;height:23px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(19,36,58,.28);opacity:.55;transition:opacity .15s,transform .15s}
+.langs button:hover{opacity:1;transform:translateY(-1px)}
+.langs button[aria-pressed="true"]{opacity:1;box-shadow:0 0 0 2px var(--white),0 0 0 4px var(--blue)}
+.langs svg,.langs img{display:block;width:100%;height:100%;object-fit:cover}
+@media (max-width:640px){.langs{top:14px;right:16px;gap:7px}.langs button{width:30px;height:20px}}
+
 /* Layout */
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px;align-items:start}
 @media (max-width:959px){.wrap{display:block;padding:0 0 60px}}
@@ -72,6 +81,8 @@ main{min-width:0}
 .field{display:grid;grid-template-columns:minmax(0,1fr) 15.5rem;gap:6px 20px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
 .sec h2 + .field,.sec .lead + .field{border-top:0}
 .field.wide{grid-template-columns:minmax(0,1fr)}
+.field.hint-row{border-top:0;padding-top:0}
+.field.grouped{border-top:0;padding-top:4px}
 .lbl{font-weight:600;line-height:1.3}
 .lbl .sub{display:block;font-weight:400;font-size:.88rem;color:var(--muted);margin-top:2px}
 .lbl .req{color:var(--err);margin-left:2px}
@@ -97,6 +108,12 @@ main{min-width:0}
 .hint[open] summary::before{content:"−"}
 .hint .hb{margin:6px 0 2px;padding:10px 14px;background:var(--paper);border-left:3px solid var(--yellow);border-radius:0 6px 6px 0;max-width:68ch}
 .hint .hb img{max-width:100%;height:auto;display:block;margin-top:8px;border-radius:4px}
+.hint .hb img{cursor:zoom-in}
+/* Uvećana slika (klik na sliku u uputi) */
+#lb{position:fixed;inset:0;z-index:100;background:rgba(10,20,35,.92);display:flex;align-items:center;justify-content:center;padding:48px 12px 12px;overflow:auto;cursor:zoom-out;touch-action:pinch-zoom}
+#lb[hidden]{display:none}
+#lb img{max-width:100%;max-height:100%;width:auto;height:auto;background:#fff;border-radius:4px;touch-action:pinch-zoom}
+#lb button{position:fixed;top:8px;right:10px;width:40px;height:40px;border:0;border-radius:50%;background:#fff;color:#123;font-size:26px;line-height:40px;cursor:pointer}
 
 /* Grid (exhaust) */
 .xg{border-top:1px solid var(--line);padding:12px 0 6px}
@@ -145,57 +162,59 @@ main{min-width:0}
 .done p{max-width:60ch}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-@media print{.nav,.actions,.top p{display:none}.wrap{display:block}.sec{break-inside:avoid}}
+@media print{.nav,.actions,.langs,.top p{display:none}.wrap{display:block}.sec{break-inside:avoid}}
 </style>
 </head>
 <body>
 
 <header class="top">
   <div class="top-in">
-    <img src="logo.jpg" alt="TTM Engines" width="198" height="92">
+    <img src="slike/logo.jpg" alt="TTM Engines" width="198" height="92">
     <div>
-      <h1>Podaci o motoru</h1>
-      <p>Upišite podatke koje znate. Polja koja ne znate ostavite prazna, izmjerit ćemo ih u radionici. Decimale možete pisati sa zarezom. Unos se sprema na ovom uređaju dok ne pošaljete obrazac.</p>
+      <h1 data-i18n="title">Podaci o motoru</h1>
+      <p data-i18n="intro">Upišite podatke koje znate. Polja koja ne znate ostavite prazna, izmjerit ćemo ih u radionici. Uz svako polje za unos nalazi se uputa „Kako izmjeriti”, a crvena strelica na slikama označava što je potrebno izmjeriti. Decimale možete pisati sa zarezom. Unos se sprema na ovom uređaju dok ne pošaljete obrazac.</p>
     </div>
+    <div class="langs" id="langs" role="group" aria-label="Jezik" data-i18n-aria="langs"></div>
   </div>
 </header>
 
 <div class="wrap">
-  <nav class="nav" aria-label="Dijelovi obrasca"><ol id="nav"></ol></nav>
+  <nav class="nav" aria-label="Dijelovi obrasca" data-i18n-aria="nav"><ol id="nav"></ol></nav>
   <main>
     <form id="form" novalidate autocomplete="on">
       <div id="sections"></div>
 
       <section class="sec" id="sec-slanje" data-sec="slanje">
-        <h2>Slanje</h2>
+        <h2 data-i18n="send_title">Slanje</h2>
         <div class="field wide">
-          <label class="lbl" for="f-napomena">Napomena<span class="sub">Sve što bi nam moglo pomoći: dosadašnje preinake, problemi, ciljevi.</span></label>
+          <label class="lbl" id="lbl-napomena" for="f-napomena">Napomena<span class="sub">Sve što bi nam moglo pomoći: dosadašnje preinake, problemi, ciljevi.</span></label>
           <div class="ctl"><div class="inp"><textarea id="f-napomena" name="napomena" data-key="napomena"></textarea></div></div>
         </div>
         <label class="consent" id="consentRow">
           <input type="checkbox" id="consent">
-          <span>Slažem se da TTM Engines koristi ove podatke za izradu ponude i odabir dijelova. Podaci se pohranjuju u Google Drive i ne dijele se s trećim stranama.</span>
+          <span data-i18n="consent">Slažem se da TTM Engines koristi ove podatke za izradu ponude i odabir dijelova. Podaci se pohranjuju u Google Drive i ne dijele se s trećim stranama.</span>
         </label>
         <div class="hp" aria-hidden="true"><label>Web stranica <input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
         <div class="status" id="status" role="status" aria-live="polite"></div>
         <div class="actions">
-          <button type="submit" class="btn btn-main" id="send">Pošalji podatke</button>
-          <button type="button" class="btn btn-sec" id="dl">Preuzmi kopiju (CSV)</button>
+          <button type="submit" class="btn btn-main" id="send" data-i18n="send">Pošalji podatke</button>
+          <button type="button" class="btn btn-sec" id="dl" data-i18n="csv">Preuzmi kopiju (CSV)</button>
         </div>
         <p class="saved" id="saved"></p>
       </section>
     </form>
 
     <section class="done" id="done" hidden>
-      <h2>Podaci su poslani</h2>
-      <p>Hvala. Pregledat ćemo podatke i javiti vam se. Ako želite kopiju za sebe, preuzmite je prije nego što započnete novi obrazac.</p>
+      <h2 data-i18n="done_title">Podaci su poslani</h2>
+      <p data-i18n="done_text">Hvala. Pregledat ćemo podatke i javiti vam se. Ako želite kopiju za sebe, preuzmite je prije nego što započnete novi obrazac.</p>
       <div class="actions">
-        <button type="button" class="btn btn-sec" id="dl2">Preuzmi kopiju (CSV)</button>
-        <button type="button" class="btn btn-main" id="newForm">Ispuni novi obrazac</button>
+        <button type="button" class="btn btn-sec" id="dl2" data-i18n="csv">Preuzmi kopiju (CSV)</button>
+        <button type="button" class="btn btn-main" id="newForm" data-i18n="new_form">Ispuni novi obrazac</button>
       </div>
     </section>
   </main>
 </div>
+<div id="lb" hidden role="dialog" aria-modal="true"><button type="button" id="lb-close" data-i18n-aria="close" aria-label="Zatvori">&times;</button><img alt=""></div>
 
 <script>
 /* =====================================================================
@@ -205,7 +224,8 @@ main{min-width:0}
 const CONFIG = {
   endpoint: "",
   storageKey: "ttm-obrazac-v1",
-  shop: "TTM Engines"
+  shop: "TTM Engines",
+  defaultLang: "hr"      // jezik ako preglednik ne traži nijedan od ponuđenih
 };
 
 /* =====================================================================
@@ -215,9 +235,12 @@ const CONFIG = {
    unit: jedinica prikazana uz polje
    hint: objašnjenje "Kako izmjeriti" (može sadržavati HTML, npr. <img>)
    grid: {row, col} -> polja se prikazuju kao tablica (auspuh)
+   hintOnly: true -> nije polje, nego zajednička uputa za polja iznad
+         (covers: broj polja iznad koja pokriva, zadano 2; među njima nema crte)
+         (npr. ista slika za usisni i ispušni ventil)
    ===================================================================== */
 const SECTIONS = [
-  { id: "kontakt", title: "Kontakt", lead: "Kako bismo vas mogli kontaktirati u vezi ponude.", fields: [
+  { id: "kontakt", title: "Kontakt", lead: "Kako bismo vas mogli kontaktirati u vezi ponude. Obavezno upišite telefon ili e-mail (dovoljno je jedno od to dvoje).", fields: [
     { key: "ime", label: "Ime i prezime", type: "text", required: true, auto: "name" },
     { key: "telefon", label: "Telefon", type: "tel", auto: "tel" },
     { key: "email", label: "E-mail", type: "email", auto: "email" },
@@ -228,46 +251,54 @@ const SECTIONS = [
     { key: "max_rpm", label: "Maksimalni okretaji motora (max RPM)", unit: "o/min", type: "int", hint: "" },
     { key: "broj_cilindara", label: "Broj cilindara", type: "int", hint: "" },
     { key: "promjer_cilindra", label: "Promjer cilindra", unit: "mm", type: "num", hint: "<p>Promjer cilindra je mjera nasuprotnih krajeva koja prolazi kroz središte cilindra</p><img src='slike/bore.jpg' alt='Mjerenje promjera cilindra'>" },
-    { key: "hod_klipa", label: "Hod klipa", unit: "mm", type: "num", hint: "" },
-    { key: "duljina_klipnjace", label: "Duljina klipnjače", unit: "mm", type: "num", hint: "" },
-    { key: "pomak_bolcna", label: "Pomak bolcna", unit: "mm", type: "num", hint: "" }
+    { key: "hod_klipa", label: "Hod klipa", unit: "mm", type: "num", hint: "<p>Hod klipa je mjera od gornje do donje mrtve točke.</p><img src='slike/stroke.jpg' alt='Hod klipa'>" },
+    { key: "duljina_klipnjace", label: "Duljina klipnjače", unit: "mm", type: "num", hint: "<p>Duljina između dva centra klipnjače.</p><img src='slike/conrod.jpg' alt='Duljina klipnjače'>" },
+    { key: "pomak_bolcna", label: "Pomak bolcna", unit: "mm", type: "num", hint: "<p>Mjera između centra bolcna i centra klipa. Može biti i nula.</p><img src='slike/pin_offset.jpg' alt='Pomak bolcna'>" }
   ]},
   { id: "ventili", title: "Ventili", fields: [
     { key: "broj_usisnih", label: "Broj usisnih ventila po cilindru", type: "select", options: ["1", "2", "3"], hint: "" },
     { key: "broj_ispusnih", label: "Broj ispušnih ventila po cilindru", type: "select", options: ["1", "2", "3"], hint: "" },
     { key: "promjer_usisnog", label: "Promjer usisnog ventila", unit: "mm", type: "num", hint: "" },
-    { key: "promjer_ispusnog", label: "Promjer ispušnog ventila", unit: "mm", type: "num", hint: "" }
+    { key: "promjer_ispusnog", label: "Promjer ispušnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "uputa_promjer_ventila", hintOnly: true, label: "promjer usisnog i ispušnog ventila", hint: "<p>Promjer glave ventila.</p><img src='slike/valve_head_diam.jpg' alt='Promjer glave ventila'>" }
   ]},
   { id: "usis", title: "Usis", fields: [
     { key: "oblik_usisa", label: "Oblik usisa", type: "select", options: ["Kratke trubice za visoke okretaje", "Dugačke trubice za niže okretaje", "Airbox"], hint: "" },
     { key: "kut_usisa", label: "Kut usisa", unit: "°", type: "num", hint: "" },
-    { key: "duljina_usisa", label: "Duljina usisa", unit: "cm", type: "num", hint: "" },
-    { key: "min_povrsina_kanala", label: "Minimalna površina kanala za jedan ventil", unit: "mm²", type: "num", hint: "" },
-    { key: "max_povrsina_ulaz", label: "Maksimalna površina na ulazu u kanal", unit: "mm²", type: "num", hint: "" },
-    { key: "kompresor", label: "Kompresor", sub: "Nema, turbo ili mehanički kompresor; model ako je poznat", type: "text", hint: "" }
+    { key: "duljina_usisa", label: "Duljina usisa", unit: "cm", type: "num", hint: "<p>Duljina usisa je udaljenost od sjedišta usisnog ventila do mjesta u kanalu na kojem se površina presjeka znatno povećava.</p>" },
+    { key: "min_povrsina_kanala", label: "Minimalna površina kanala za jedan ventil", unit: "mm²", type: "num", hint: "<p>Minimalna površina kanala je najmanji presjek, u mm², unutar kanala svakog pojedinog ventila. Kod glava s 2 ili 3 ventila po kanalu ne zbrajajte minimalne površine, nego upišite površinu samo jednog ventila.</p><img src='slike/min_area_port.jpg' alt='Minimalna površina kanala'>" },
+    { key: "max_povrsina_ulaz", label: "Maksimalna površina na ulazu u kanal", unit: "mm²", type: "num", hint: "<p>Površina na ulazu u kanal mjeri se na spoju kanala s plenumom (usisnim kolektorom) ili odmah unutar ulaznog lijevka trubice.</p><img src='slike/max_intake_area.jpg' alt='Površina na ulazu u kanal'>" },
+    { key: "kompresor", label: "Prednabijanje", sub: "Nema (Atmosfera), turbopunjač, kompresor (supercharger), drugo; model ako je poznat", type: "text", hint: "" }
   ]},
   { id: "bregaste", title: "Bregaste osovine", fields: [
-    { key: "bregasta", label: "Bregasta osovina", sub: "Proizvođač i oznaka", type: "text", hint: "" },
-    { key: "max_lift", label: "Maksimalni lift ventila", unit: "mm", type: "num", hint: "" },
-    { key: "zazor", label: "Zazor ventila", unit: "mm", type: "num", hint: "" },
+    { key: "bregasta", label: "Bregasta osovina", sub: "Proizvođač i oznaka/šifra", type: "text", hint: "" },
+    { key: "max_lift", label: "Maksimalni lift usisnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "max_lift_isp", label: "Maksimalni lift ispušnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "uputa_max_lift", hintOnly: true, label: "maksimalni lift usisnog i ispušnog ventila", hint: "<img src='slike/cam_lift.jpg' alt='Maksimalni lift ventila'>" },
+    { key: "zazor", label: "Zazor usisnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "zazor_isp", label: "Zazor ispušnog ventila", unit: "mm", type: "num", hint: "" },
+    { key: "uputa_zazor", hintOnly: true, label: "zazor usisnog i ispušnog ventila", hint: "<p>Mjera zračnosti ventila. Propisuje je proizvođač. Slika je informativnog karaktera jer postoje različite izvedbe.</p><img src='slike/valv_clear.jpg' alt='Zazor ventila'>" },
     { key: "omjer_klackalica", label: "Omjer klackalica (ako ih ima)", type: "num", hint: "" },
-    { key: "ivo", label: "IVO", sub: "Otvaranje usisnog ventila", unit: "°", type: "num", hint: "" },
-    { key: "ivc", label: "IVC", sub: "Zatvaranje usisnog ventila", unit: "°", type: "num", hint: "" },
-    { key: "evo", label: "EVO", sub: "Otvaranje ispušnog ventila", unit: "°", type: "num", hint: "" },
-    { key: "evc", label: "EVC", sub: "Zatvaranje ispušnog ventila", unit: "°", type: "num", hint: "" },
-    { key: "max_lift_tdc", label: "Max lift od TDC", unit: "°", type: "num", hint: "" }
+    { key: "ivo", label: "IVO", sub: "Stupnjevi na 1 mm lifta: x° prije TDC (gornja mrtva točka)", unit: "°", type: "num", hint: "" },
+    { key: "ivc", label: "IVC", sub: "Stupnjevi na 1 mm lifta: x° nakon BDC (donja mrtva točka)", unit: "°", type: "num", hint: "" },
+    { key: "evo", label: "EVO", sub: "Stupnjevi na 1 mm lifta: x° prije BDC (donja mrtva točka)", unit: "°", type: "num", hint: "" },
+    { key: "evc", label: "EVC", sub: "Stupnjevi na 1 mm lifta: x° nakon TDC (gornja mrtva točka)", unit: "°", type: "num", hint: "" },
+    { key: "max_lift_tdc", label: "Max lift usisnog ventila od TDC", sub: "Udaljenost trenutka maksimalnog lifta od TDC", unit: "°", type: "num", hint: "" },
+    { key: "max_lift_tdc_isp", label: "Max lift ispušnog ventila od TDC", sub: "Udaljenost trenutka maksimalnog lifta od TDC", unit: "°", type: "num", hint: "" },
+    { key: "uputa_razvod", hintOnly: true, covers: 6, how: "how_read", label: "IVO, IVC, EVO, EVC i max lift od TDC", hint: "<p>Ove vrijednosti očitavaju se s kartice bregaste osovine (podaci proizvođača).</p><img src='slike/cam_data.jpg' alt='Podaci bregaste osovine'>" }
   ]},
   { id: "komora", title: "Kompresija i komora izgaranja", fields: [
     { key: "omjer_kompresije", label: "Omjer kompresije", sub: "Npr. 10,5", type: "num", hint: "" },
-    { key: "termalni_premazi", label: "Termalni premazi", type: "text", hint: "" },
-    { key: "oblik_komore", label: "Oblik komore izgaranja", unit: "mm", type: "text", hint: "" }
+    { key: "termalni_premazi", label: "Termalni premazi", type: "select", options: ["Klip", "Komora", "Klip i komora"], hint: "" },
+    { key: "oblik_komore", label: "Oblik komore izgaranja", type: "select", options: ["Opcija 1", "Opcija 2", "Opcija 3"], hint: "" }
   ]},
   { id: "gorivo", title: "Gorivo", fields: [
-    { key: "oktanski_broj", label: "Oktanski broj goriva", unit: "oktan", type: "num", hint: "" },
-    { key: "afr", label: "AFR", sub: "Omjer zraka i goriva", type: "num", hint: "" }
+    { key: "oktanski_broj", label: "Oktanski broj goriva", sub: "Prema EU standardu", unit: "oktan", type: "num", hint: "" },
+    { key: "afr", label: "AFR", sub: "Stehiometrijski omjer goriva koje koristite. Za cestovni benzin to je 14,7.", type: "num", hint: "" },
+    { key: "afr_voznja", label: "AFR ili lambda u vožnji", sub: "Vrijednost koja se koristi u vožnji, npr. 12,8 (AFR) ili 0,87 (lambda)", type: "num", hint: "" }
   ]},
   { id: "auspuh", title: "Auspuh", fields: [
-    { key: "oblik_auspuha", label: "Oblik auspuha", unit: "mm", type: "text", hint: "" },
+    { key: "oblik_auspuha", label: "Oblik auspuha", type: "select", options: ["Opcija 1", "Opcija 2", "Opcija 3"], hint: "" },
     ...[["prim","Primarni"],["sek","Sekundarni"],["ter","Tercijarni"],["kol1","1. kolektor"],["kol2","2. kolektor"]].flatMap(([k, r]) => [
       { key: `aus_${k}_pp`, label: `${r} promjer početak`, unit: "mm", type: "num", grid: { row: r, col: "Promjer početak" } },
       { key: `aus_${k}_pk`, label: `${r} promjer kraj`, unit: "mm", type: "num", grid: { row: r, col: "Promjer kraj" } },
@@ -276,53 +307,337 @@ const SECTIONS = [
   ]}
 ];
 
+/* =====================================================================
+   JEZICI
+   Novi jezik: dodajte red u LANGS (kod, naziv, slika zastave u slike/flags) i blok s istim
+   kodom u T. Sve što nije prevedeno prikazuje se na hrvatskom.
+   Hrvatski tekstovi pitanja su u SECTIONS gore, T sadrži samo prijevode.
+   Odgovori u tablici uvijek imaju hrvatske nazive stupaca; stupac
+   "Jezik" pokazuje na kojem je jeziku obrazac ispunjen.
+   ===================================================================== */
+const LANGS = [
+  { code: "hr", name: "Hrvatski", flag: "slike/flags/hr.svg" },
+  { code: "en", name: "English", flag: "slike/flags/uk.svg" },
+  { code: "it", name: "Italiano", flag: "slike/flags/it.svg" },
+  { code: "de", name: "Deutsch", flag: "slike/flags/de.svg" }
+];
+
+const T = {
+  hr: { ui: {
+    title: "Podaci o motoru",
+    intro: "Upišite podatke koje znate. Polja koja ne znate ostavite prazna, izmjerit ćemo ih u radionici. Uz svako polje za unos nalazi se uputa „Kako izmjeriti”, a crvena strelica na slikama označava što je potrebno izmjeriti. Decimale možete pisati sa zarezom. Unos se sprema na ovom uređaju dok ne pošaljete obrazac.",
+    nav: "Dijelovi obrasca", langs: "Jezik", send_title: "Slanje",
+    consent: "Slažem se da TTM Engines koristi ove podatke za izradu ponude i odabir dijelova. Podaci se pohranjuju u Google Drive i ne dijele se s trećim stranama.",
+    send: "Pošalji podatke", csv: "Preuzmi kopiju (CSV)",
+    done_title: "Podaci su poslani",
+    done_text: "Hvala. Pregledat ćemo podatke i javiti vam se. Ako želite kopiju za sebe, preuzmite je prije nego što započnete novi obrazac.",
+    new_form: "Ispuni novi obrazac", choose: "Odaberite", how: "Kako izmjeriti", how_read: "Kako pročitati", close: "Zatvori",
+    e_req: "Ovo polje je obavezno.", e_num: "Upišite broj, npr. 86,5", e_int: "Upišite cijeli broj.",
+    e_mail: "Provjerite e-mail adresu.", e_contact: "Upišite telefon ili e-mail.", e_tel: "Provjerite broj telefona.",
+    s_check: "Provjerite označena polja.", s_sending: "Šaljem…",
+    s_noend: "Obrazac još nije povezan s tablicom za primanje podataka. Preuzmite kopiju (CSV) i pošaljite nam je e-mailom.",
+    s_fail: "Slanje nije uspjelo ({e}). Pokušajte ponovno ili preuzmite kopiju (CSV) i pošaljite nam je e-mailom.",
+    s_offline: "Nema internetske veze. Podaci su spremljeni i poslat će se automatski čim se veza vrati. Ostavite ovu stranicu otvorenom ili je kasnije ponovno otvorite.",
+    s_pending: "Imate neposlane podatke. Šaljem ih ponovno…",
+    saved: "Spremljeno na ovom uređaju u {t}.",
+    csv_head: ["Dio", "Podatak", "Vrijednost", "Jedinica"], csv_name: "podaci-o-motoru", locale: "hr-HR"
+  }},
+
+  en: {
+    ui: {
+      title: "Engine data",
+      intro: "Fill in the data you know. Leave any fields you don't know empty and we will measure them in the workshop. Each input field has a “How to measure” guide, and the red arrow in the pictures shows what needs to be measured. Use a comma for decimals. Your entries are saved on this device until you submit the form.",
+      nav: "Form sections", langs: "Language", send_title: "Submit",
+      consent: "I agree that TTM Engines may use this data to prepare a quote and select parts. The data is stored in Google Drive and is not shared with third parties.",
+      send: "Send data", csv: "Download a copy (CSV)",
+      done_title: "Your data has been sent",
+      done_text: "Thank you. We will review the data and get back to you. If you want a copy for yourself, download it before starting a new form.",
+      new_form: "Fill in a new form", choose: "Select", how: "How to measure", how_read: "How to read", close: "Close",
+      e_req: "This field is required.", e_num: "Enter a number, e.g. 86,5", e_int: "Enter a whole number.",
+      e_mail: "Check the e-mail address.", e_contact: "Enter a phone number or e-mail.", e_tel: "Check the phone number.",
+      s_check: "Please check the highlighted fields.", s_sending: "Sending…",
+      s_noend: "The form is not yet connected to the spreadsheet that receives the data. Download a copy (CSV) and send it to us by e-mail.",
+      s_fail: "Sending failed ({e}). Try again, or download a copy (CSV) and send it to us by e-mail.",
+      s_offline: "No internet connection. Your data is saved and will be sent automatically as soon as the connection is back. Keep this page open or open it again later.",
+      s_pending: "You have unsent data. Sending it again…",
+      saved: "Saved on this device at {t}.",
+      csv_head: ["Section", "Item", "Value", "Unit"], csv_name: "engine-data", locale: "en-GB"
+    },
+    sections: {
+      kontakt: { title: "Contact", lead: "So we can contact you about the quote. A phone number or e-mail is required (one of the two is enough)." },
+      motor: { title: "Basic engine data" }, ventili: { title: "Valves" }, usis: { title: "Intake" },
+      bregaste: { title: "Camshafts" }, komora: { title: "Compression and combustion chamber" },
+      gorivo: { title: "Fuel" }, auspuh: { title: "Exhaust" }
+    },
+    fields: {
+      ime: { label: "Full name" }, telefon: { label: "Phone" }, email: { label: "E-mail" },
+      vozilo: { label: "Vehicle", sub: "Make, model and year" },
+      oznaka_motora: { label: "Engine code", sub: "E.g. ABF, B18C, M52B28" },
+      max_rpm: { label: "Maximum engine speed (max RPM)" },
+      broj_cilindara: { label: "Number of cylinders" },
+      promjer_cilindra: { label: "Bore (cylinder diameter)", hint: "<p>The bore is the cylinder diameter, measured straight across from one side to the other through the centre of the cylinder.</p><img src='slike/bore.jpg' alt='Measuring the cylinder bore'>" },
+      hod_klipa: { label: "Stroke", hint: "<p>The stroke is the distance the piston travels from top dead centre to bottom dead centre.</p><img src='slike/stroke.jpg' alt='Piston stroke'>" },
+      duljina_klipnjace: { label: "Connecting rod length", hint: "<p>The distance between the centres of the connecting rod's two eyes.</p><img src='slike/conrod.jpg' alt='Connecting rod length'>" },
+      pomak_bolcna: { label: "Piston pin offset", hint: "<p>The distance between the centre of the piston pin and the centre of the piston. It can also be zero.</p><img src='slike/pin_offset.jpg' alt='Piston pin offset'>" },
+      broj_usisnih: { label: "Intake valves per cylinder" },
+      broj_ispusnih: { label: "Exhaust valves per cylinder" },
+      promjer_usisnog: { label: "Intake valve diameter" },
+      promjer_ispusnog: { label: "Exhaust valve diameter" },
+      uputa_promjer_ventila: { label: "intake and exhaust valve diameter", hint: "<p>The diameter of the valve head.</p><img src='slike/valve_head_diam.jpg' alt='Valve head diameter'>" },
+      oblik_usisa: { label: "Intake type", options: ["Short runners for high rpm", "Long runners for lower rpm", "Airbox"] },
+      kut_usisa: { label: "Intake angle" },
+      duljina_usisa: { label: "Intake length", hint: "<p>The intake runner length is the distance from the intake valve seat to the point in the port where the cross-sectional area increases substantially.</p>" },
+      min_povrsina_kanala: { label: "Minimum port area per valve", hint: "<p>The minimum port area is the smallest cross-section, in mm², within the port of each valve. On cylinder heads with 2 or 3 valves per port, do not add the minimum port areas together: enter the area of one valve only.</p><img src='slike/min_area_port.jpg' alt='Minimum port area'>" },
+      max_povrsina_ulaz: { label: "Maximum area at the port entry", hint: "<p>The port entry area is measured where the port joins the plenum, or just inside the runner bellmouth.</p><img src='slike/max_intake_area.jpg' alt='Port entry area'>" },
+      kompresor: { label: "Forced induction", sub: "None (naturally aspirated), turbocharger, supercharger, other; model if known" },
+      bregasta: { label: "Camshaft", sub: "Manufacturer and designation/part number" },
+      max_lift: { label: "Maximum intake valve lift" }, max_lift_isp: { label: "Maximum exhaust valve lift" },
+      uputa_max_lift: { label: "maximum intake and exhaust valve lift", hint: "<img src='slike/cam_lift.jpg' alt='Maximum valve lift'>" },
+      zazor: { label: "Intake valve clearance" }, zazor_isp: { label: "Exhaust valve clearance" },
+      uputa_zazor: { label: "intake and exhaust valve clearance", hint: "<p>The valve clearance (lash). It is specified by the manufacturer. The picture is for illustration only, as there are different designs.</p><img src='slike/valv_clear.jpg' alt='Valve clearance'>" },
+      omjer_klackalica: { label: "Rocker arm ratio (if fitted)" },
+      ivo: { sub: "Degrees at 1 mm lift: x° before TDC (top dead centre)" }, ivc: { sub: "Degrees at 1 mm lift: x° after BDC (bottom dead centre)" },
+      evo: { sub: "Degrees at 1 mm lift: x° before BDC (bottom dead centre)" }, evc: { sub: "Degrees at 1 mm lift: x° after TDC (top dead centre)" },
+      max_lift_tdc: { label: "Intake valve max lift from TDC", sub: "Distance of the moment of maximum lift from TDC" }, max_lift_tdc_isp: { label: "Exhaust valve max lift from TDC", sub: "Distance of the moment of maximum lift from TDC" },
+      uputa_razvod: { label: "IVO, IVC, EVO, EVC and max lift from TDC", hint: "<p>These values are read from the camshaft card (manufacturer data).</p><img src='slike/cam_data.jpg' alt='Camshaft data'>" },
+      omjer_kompresije: { label: "Compression ratio", sub: "E.g. 10,5" },
+      termalni_premazi: { label: "Thermal coatings", options: ["Piston", "Combustion chamber", "Piston and combustion chamber"] },
+      oblik_komore: { label: "Combustion chamber shape", options: ["Option 1", "Option 2", "Option 3"] },
+      oktanski_broj: { label: "Fuel octane rating", sub: "According to EU standard" },
+      afr: { sub: "Stoichiometric ratio of the fuel you use. For road petrol it is 14,7." },
+      afr_voznja: { label: "AFR or lambda while driving", sub: "The value used while driving, e.g. 12,8 (AFR) or 0,87 (lambda)" },
+      oblik_auspuha: { label: "Exhaust layout", options: ["Option 1", "Option 2", "Option 3"] },
+      napomena: { label: "Notes", sub: "Anything that could help us: previous modifications, problems, goals." }
+    },
+    grid: { "Primarni": "Primary", "Sekundarni": "Secondary", "Tercijarni": "Tertiary", "1. kolektor": "Collector 1", "2. kolektor": "Collector 2",
+      "Promjer početak": "Start diameter", "Promjer kraj": "End diameter", "Duljina": "Length" },
+    units: { "o/min": "rpm", "oktan": "octane" }
+  },
+
+  it: {
+    ui: {
+      title: "Dati del motore",
+      intro: "Inserisci i dati che conosci. Lascia vuoti i campi che non conosci, li misureremo in officina. Ogni campo ha una guida «Come misurare» e la freccia rossa nelle immagini indica cosa bisogna misurare. Per i decimali puoi usare la virgola. I dati inseriti restano salvati su questo dispositivo finché non invii il modulo.",
+      nav: "Sezioni del modulo", langs: "Lingua", send_title: "Invio",
+      consent: "Acconsento che TTM Engines utilizzi questi dati per preparare un preventivo e scegliere i componenti. I dati sono archiviati su Google Drive e non vengono condivisi con terzi.",
+      send: "Invia i dati", csv: "Scarica una copia (CSV)",
+      done_title: "Dati inviati",
+      done_text: "Grazie. Esamineremo i dati e ti contatteremo. Se vuoi una copia per te, scaricala prima di iniziare un nuovo modulo.",
+      new_form: "Compila un nuovo modulo", choose: "Seleziona", how: "Come misurare", how_read: "Come leggere", close: "Chiudi",
+      e_req: "Campo obbligatorio.", e_num: "Inserisci un numero, es. 86,5", e_int: "Inserisci un numero intero.",
+      e_mail: "Controlla l'indirizzo e-mail.", e_contact: "Inserisci un numero di telefono o un'e-mail.", e_tel: "Controlla il numero di telefono.",
+      s_check: "Controlla i campi evidenziati.", s_sending: "Invio in corso…",
+      s_noend: "Il modulo non è ancora collegato al foglio che riceve i dati. Scarica una copia (CSV) e inviacela via e-mail.",
+      s_fail: "Invio non riuscito ({e}). Riprova oppure scarica una copia (CSV) e inviacela via e-mail.",
+      s_offline: "Nessuna connessione a Internet. I dati sono salvati e verranno inviati automaticamente appena torna la connessione. Lascia aperta questa pagina o riaprila più tardi.",
+      s_pending: "Hai dati non inviati. Li invio di nuovo…",
+      saved: "Salvato su questo dispositivo alle {t}.",
+      csv_head: ["Sezione", "Dato", "Valore", "Unità"], csv_name: "dati-motore", locale: "it-IT"
+    },
+    sections: {
+      kontakt: { title: "Contatto", lead: "Per poterti contattare riguardo al preventivo. È obbligatorio inserire un numero di telefono o un'e-mail (basta uno dei due)." },
+      motor: { title: "Dati base del motore" }, ventili: { title: "Valvole" }, usis: { title: "Aspirazione" },
+      bregaste: { title: "Alberi a camme" }, komora: { title: "Compressione e camera di combustione" },
+      gorivo: { title: "Carburante" }, auspuh: { title: "Scarico" }
+    },
+    fields: {
+      ime: { label: "Nome e cognome" }, telefon: { label: "Telefono" }, email: { label: "E-mail" },
+      vozilo: { label: "Veicolo", sub: "Marca, modello e anno" },
+      oznaka_motora: { label: "Codice motore", sub: "Es. ABF, B18C, M52B28" },
+      max_rpm: { label: "Regime massimo del motore (giri max)" },
+      broj_cilindara: { label: "Numero di cilindri" },
+      promjer_cilindra: { label: "Alesaggio (diametro del cilindro)", hint: "<p>L'alesaggio è il diametro del cilindro, misurato da un lato all'altro passando per il centro del cilindro.</p><img src='slike/bore.jpg' alt='Misurazione dell&#39;alesaggio'>" },
+      hod_klipa: { label: "Corsa", hint: "<p>La corsa è la distanza percorsa dal pistone dal punto morto superiore al punto morto inferiore.</p><img src='slike/stroke.jpg' alt='Corsa del pistone'>" },
+      duljina_klipnjace: { label: "Lunghezza della biella", hint: "<p>La distanza tra i due centri della biella (interasse).</p><img src='slike/conrod.jpg' alt='Lunghezza della biella'>" },
+      pomak_bolcna: { label: "Disassamento dello spinotto", hint: "<p>La distanza tra il centro dello spinotto e il centro del pistone. Può anche essere zero.</p><img src='slike/pin_offset.jpg' alt='Disassamento dello spinotto'>" },
+      broj_usisnih: { label: "Valvole di aspirazione per cilindro" },
+      broj_ispusnih: { label: "Valvole di scarico per cilindro" },
+      promjer_usisnog: { label: "Diametro della valvola di aspirazione" },
+      promjer_ispusnog: { label: "Diametro della valvola di scarico" },
+      uputa_promjer_ventila: { label: "diametro delle valvole di aspirazione e di scarico", hint: "<p>Il diametro del fungo della valvola.</p><img src='slike/valve_head_diam.jpg' alt='Diametro del fungo della valvola'>" },
+      oblik_usisa: { label: "Tipo di aspirazione", options: ["Cornetti corti per alti regimi", "Cornetti lunghi per regimi più bassi", "Airbox"] },
+      kut_usisa: { label: "Angolo di aspirazione" },
+      duljina_usisa: { label: "Lunghezza dell'aspirazione", hint: "<p>La lunghezza dell'aspirazione è la distanza dalla sede della valvola di aspirazione al punto del condotto in cui la sezione aumenta in modo sostanziale.</p>" },
+      min_povrsina_kanala: { label: "Sezione minima del condotto per valvola", hint: "<p>La sezione minima del condotto è la sezione trasversale più piccola, in mm², all'interno del condotto di ciascuna valvola. Nelle testate con 2 o 3 valvole per condotto non sommare le sezioni minime: inserisci la sezione di una sola valvola.</p><img src='slike/min_area_port.jpg' alt='Sezione minima del condotto'>" },
+      max_povrsina_ulaz: { label: "Sezione massima all'ingresso del condotto", hint: "<p>La sezione d'ingresso del condotto si misura nel punto in cui il condotto si unisce al plenum, oppure appena all'interno della bocca del cornetto.</p><img src='slike/max_intake_area.jpg' alt='Sezione d&#39;ingresso del condotto'>" },
+      kompresor: { label: "Sovralimentazione", sub: "Nessuna (aspirato), turbocompressore, compressore volumetrico (supercharger), altro; modello se noto" },
+      bregasta: { label: "Albero a camme", sub: "Produttore e denominazione/codice" },
+      max_lift: { label: "Alzata massima della valvola di aspirazione" }, max_lift_isp: { label: "Alzata massima della valvola di scarico" },
+      uputa_max_lift: { label: "alzata massima delle valvole di aspirazione e di scarico", hint: "<img src='slike/cam_lift.jpg' alt='Alzata massima della valvola'>" },
+      zazor: { label: "Gioco della valvola di aspirazione" }, zazor_isp: { label: "Gioco della valvola di scarico" },
+      uputa_zazor: { label: "gioco delle valvole di aspirazione e di scarico", hint: "<p>Il gioco delle valvole. È prescritto dal costruttore. L&#39;immagine è solo indicativa, perché esistono diverse soluzioni costruttive.</p><img src='slike/valv_clear.jpg' alt='Gioco valvole'>" },
+      omjer_klackalica: { label: "Rapporto dei bilancieri (se presenti)" },
+      ivo: { sub: "Gradi a 1 mm di alzata: x° prima del PMS (punto morto superiore)" }, ivc: { sub: "Gradi a 1 mm di alzata: x° dopo il PMI (punto morto inferiore)" },
+      evo: { sub: "Gradi a 1 mm di alzata: x° prima del PMI (punto morto inferiore)" }, evc: { sub: "Gradi a 1 mm di alzata: x° dopo il PMS (punto morto superiore)" },
+      max_lift_tdc: { label: "Alzata massima della valvola di aspirazione dal PMS", sub: "Distanza del momento di alzata massima dal PMS" }, max_lift_tdc_isp: { label: "Alzata massima della valvola di scarico dal PMS", sub: "Distanza del momento di alzata massima dal PMS" },
+      uputa_razvod: { label: "IVO, IVC, EVO, EVC e alzata massima dal PMS", hint: "<p>Questi valori si leggono dalla scheda dell&#39;albero a camme (dati del costruttore).</p><img src='slike/cam_data.jpg' alt='Dati albero a camme'>" },
+      omjer_kompresije: { label: "Rapporto di compressione", sub: "Es. 10,5" },
+      termalni_premazi: { label: "Rivestimenti termici", options: ["Pistone", "Camera di combustione", "Pistone e camera di combustione"] },
+      oblik_komore: { label: "Forma della camera di combustione", options: ["Opzione 1", "Opzione 2", "Opzione 3"] },
+      oktanski_broj: { label: "Numero di ottano del carburante", sub: "Secondo lo standard UE" },
+      afr: { sub: "Rapporto stechiometrico del carburante che utilizzi. Per la benzina stradale è 14,7." },
+      afr_voznja: { label: "AFR o lambda in marcia", sub: "Il valore usato in marcia, ad es. 12,8 (AFR) o 0,87 (lambda)" },
+      oblik_auspuha: { label: "Configurazione dello scarico", options: ["Opzione 1", "Opzione 2", "Opzione 3"] },
+      napomena: { label: "Note", sub: "Tutto ciò che potrebbe aiutarci: modifiche precedenti, problemi, obiettivi." }
+    },
+    grid: { "Primarni": "Primario", "Sekundarni": "Secondario", "Tercijarni": "Terziario", "1. kolektor": "Collettore 1", "2. kolektor": "Collettore 2",
+      "Promjer početak": "Diametro iniziale", "Promjer kraj": "Diametro finale", "Duljina": "Lunghezza" },
+    units: { "o/min": "giri/min", "oktan": "ottani" }
+  },
+
+  de: {
+    ui: {
+      title: "Motordaten",
+      intro: "Tragen Sie die Daten ein, die Sie kennen. Felder, die Sie nicht kennen, lassen Sie leer, wir messen sie in der Werkstatt. Zu jedem Eingabefeld gibt es eine Anleitung „So wird gemessen“, und der rote Pfeil auf den Bildern zeigt, was gemessen werden muss. Dezimalzahlen können Sie mit Komma schreiben. Ihre Eingaben bleiben auf diesem Gerät gespeichert, bis Sie das Formular absenden.",
+      nav: "Formularabschnitte", langs: "Sprache", send_title: "Absenden",
+      consent: "Ich bin damit einverstanden, dass TTM Engines diese Daten zur Erstellung eines Angebots und zur Auswahl von Teilen verwendet. Die Daten werden in Google Drive gespeichert und nicht an Dritte weitergegeben.",
+      send: "Daten senden", csv: "Kopie herunterladen (CSV)",
+      done_title: "Ihre Daten wurden gesendet",
+      done_text: "Vielen Dank. Wir prüfen die Daten und melden uns bei Ihnen. Wenn Sie eine Kopie möchten, laden Sie sie herunter, bevor Sie ein neues Formular beginnen.",
+      new_form: "Neues Formular ausfüllen", choose: "Bitte wählen", how: "So wird gemessen", how_read: "So wird abgelesen", close: "Schließen",
+      e_req: "Dies ist ein Pflichtfeld.", e_num: "Geben Sie eine Zahl ein, z. B. 86,5", e_int: "Geben Sie eine ganze Zahl ein.",
+      e_mail: "Prüfen Sie die E-Mail-Adresse.", e_contact: "Geben Sie eine Telefonnummer oder E-Mail-Adresse an.", e_tel: "Prüfen Sie die Telefonnummer.",
+      s_check: "Bitte prüfen Sie die markierten Felder.", s_sending: "Wird gesendet…",
+      s_noend: "Das Formular ist noch nicht mit der Tabelle verbunden, die die Daten empfängt. Laden Sie eine Kopie (CSV) herunter und senden Sie sie uns per E-Mail.",
+      s_fail: "Senden fehlgeschlagen ({e}). Versuchen Sie es erneut oder laden Sie eine Kopie (CSV) herunter und senden Sie sie uns per E-Mail.",
+      s_offline: "Keine Internetverbindung. Ihre Daten sind gespeichert und werden automatisch gesendet, sobald die Verbindung wieder besteht. Lassen Sie diese Seite offen oder öffnen Sie sie später erneut.",
+      s_pending: "Sie haben noch nicht gesendete Daten. Sie werden erneut gesendet…",
+      saved: "Auf diesem Gerät gespeichert um {t}.",
+      csv_head: ["Abschnitt", "Angabe", "Wert", "Einheit"], csv_name: "motordaten", locale: "de-DE"
+    },
+    sections: {
+      kontakt: { title: "Kontakt", lead: "Damit wir Sie wegen des Angebots kontaktieren können. Eine Telefonnummer oder E-Mail-Adresse ist erforderlich (eines von beiden genügt)." },
+      motor: { title: "Grunddaten des Motors" }, ventili: { title: "Ventile" }, usis: { title: "Ansaugung" },
+      bregaste: { title: "Nockenwellen" }, komora: { title: "Verdichtung und Brennraum" },
+      gorivo: { title: "Kraftstoff" }, auspuh: { title: "Abgasanlage" }
+    },
+    fields: {
+      ime: { label: "Vor- und Nachname" }, telefon: { label: "Telefon" }, email: { label: "E-Mail" },
+      vozilo: { label: "Fahrzeug", sub: "Marke, Modell und Baujahr" },
+      oznaka_motora: { label: "Motorkennung", sub: "Z. B. ABF, B18C, M52B28" },
+      max_rpm: { label: "Maximale Motordrehzahl (max. U/min)" },
+      broj_cilindara: { label: "Zylinderanzahl" },
+      promjer_cilindra: { label: "Bohrung (Zylinderdurchmesser)", hint: "<p>Die Bohrung ist der Zylinderdurchmesser, gemessen quer von einer Seite zur anderen durch die Zylindermitte.</p><img src='slike/bore.jpg' alt='Messen der Zylinderbohrung'>" },
+      hod_klipa: { label: "Hub", hint: "<p>Der Hub ist der Weg des Kolbens vom oberen bis zum unteren Totpunkt.</p><img src='slike/stroke.jpg' alt='Kolbenhub'>" },
+      duljina_klipnjace: { label: "Pleuellänge", hint: "<p>Der Abstand zwischen den beiden Augenmitten des Pleuels.</p><img src='slike/conrod.jpg' alt='Pleuellänge'>" },
+      pomak_bolcna: { label: "Kolbenbolzenversatz (Desachsierung)", hint: "<p>Der Abstand zwischen der Mitte des Kolbenbolzens und der Kolbenmitte. Er kann auch null sein.</p><img src='slike/pin_offset.jpg' alt='Kolbenbolzenversatz'>" },
+      broj_usisnih: { label: "Einlassventile pro Zylinder" },
+      broj_ispusnih: { label: "Auslassventile pro Zylinder" },
+      promjer_usisnog: { label: "Einlassventildurchmesser" },
+      promjer_ispusnog: { label: "Auslassventildurchmesser" },
+      uputa_promjer_ventila: { label: "Durchmesser der Ein- und Auslassventile", hint: "<p>Der Durchmesser des Ventiltellers.</p><img src='slike/valve_head_diam.jpg' alt='Durchmesser des Ventiltellers'>" },
+      oblik_usisa: { label: "Ansaugsystem", options: ["Kurze Ansaugtrichter für hohe Drehzahlen", "Lange Ansaugrohre für niedrigere Drehzahlen", "Airbox"] },
+      kut_usisa: { label: "Ansaugwinkel" },
+      duljina_usisa: { label: "Ansauglänge", hint: "<p>Die Ansauglänge ist der Abstand vom Einlassventilsitz bis zu der Stelle im Kanal, an der sich der Querschnitt deutlich vergrößert.</p>" },
+      min_povrsina_kanala: { label: "Minimaler Kanalquerschnitt pro Ventil", hint: "<p>Der minimale Kanalquerschnitt ist der kleinste Querschnitt in mm² im Kanal jedes einzelnen Ventils. Bei Zylinderköpfen mit 2 oder 3 Ventilen pro Kanal die minimalen Querschnitte nicht addieren, sondern nur den Querschnitt eines Ventils eintragen.</p><img src='slike/min_area_port.jpg' alt='Minimaler Kanalquerschnitt'>" },
+      max_povrsina_ulaz: { label: "Maximaler Querschnitt am Kanaleintritt", hint: "<p>Der Querschnitt am Kanaleintritt wird am Übergang des Kanals zum Sammler (Plenum) gemessen oder direkt innerhalb des Ansaugtrichters.</p><img src='slike/max_intake_area.jpg' alt='Querschnitt am Kanaleintritt'>" },
+      kompresor: { label: "Aufladung", sub: "Keine (Saugmotor), Turbolader, Kompressor (Supercharger), Sonstiges; Modell, falls bekannt" },
+      bregasta: { label: "Nockenwelle", sub: "Hersteller und Bezeichnung/Teilenummer" },
+      max_lift: { label: "Maximaler Hub des Einlassventils" }, max_lift_isp: { label: "Maximaler Hub des Auslassventils" },
+      uputa_max_lift: { label: "maximaler Hub der Ein- und Auslassventile", hint: "<img src='slike/cam_lift.jpg' alt='Maximaler Ventilhub'>" },
+      zazor: { label: "Ventilspiel Einlass" }, zazor_isp: { label: "Ventilspiel Auslass" },
+      uputa_zazor: { label: "Ventilspiel der Ein- und Auslassventile", hint: "<p>Das Ventilspiel. Es wird vom Hersteller vorgegeben. Das Bild dient nur zur Veranschaulichung, da es unterschiedliche Bauarten gibt.</p><img src='slike/valv_clear.jpg' alt='Ventilspiel'>" },
+      omjer_klackalica: { label: "Kipphebelübersetzung (falls vorhanden)" },
+      ivo: { sub: "Grad bei 1 mm Ventilhub: x° vor OT (oberer Totpunkt)" }, ivc: { sub: "Grad bei 1 mm Ventilhub: x° nach UT (unterer Totpunkt)" },
+      evo: { sub: "Grad bei 1 mm Ventilhub: x° vor UT (unterer Totpunkt)" }, evc: { sub: "Grad bei 1 mm Ventilhub: x° nach OT (oberer Totpunkt)" },
+      max_lift_tdc: { label: "Maximaler Hub des Einlassventils nach OT", sub: "Abstand des Zeitpunkts des maximalen Hubs vom OT" }, max_lift_tdc_isp: { label: "Maximaler Hub des Auslassventils nach OT", sub: "Abstand des Zeitpunkts des maximalen Hubs vom OT" },
+      uputa_razvod: { label: "IVO, IVC, EVO, EVC und maximaler Hub nach OT", hint: "<p>Diese Werte werden von der Nockenwellenkarte abgelesen (Herstellerangaben).</p><img src='slike/cam_data.jpg' alt='Nockenwellendaten'>" },
+      omjer_kompresije: { label: "Verdichtungsverhältnis", sub: "Z. B. 10,5" },
+      termalni_premazi: { label: "Thermische Beschichtungen", options: ["Kolben", "Brennraum", "Kolben und Brennraum"] },
+      oblik_komore: { label: "Brennraumform", options: ["Option 1", "Option 2", "Option 3"] },
+      oktanski_broj: { label: "Oktanzahl des Kraftstoffs", sub: "Nach EU-Norm" },
+      afr: { sub: "Stöchiometrisches Verhältnis des verwendeten Kraftstoffs. Bei Straßenbenzin beträgt es 14,7." },
+      afr_voznja: { label: "AFR oder Lambda im Fahrbetrieb", sub: "Der im Fahrbetrieb verwendete Wert, z. B. 12,8 (AFR) oder 0,87 (Lambda)" },
+      oblik_auspuha: { label: "Bauform der Abgasanlage", options: ["Option 1", "Option 2", "Option 3"] },
+      napomena: { label: "Anmerkungen", sub: "Alles, was uns helfen könnte: bisherige Umbauten, Probleme, Ziele." }
+    },
+    grid: { "Primarni": "Primärrohr", "Sekundarni": "Sekundärrohr", "Tercijarni": "Tertiärrohr", "1. kolektor": "Sammler 1", "2. kolektor": "Sammler 2",
+      "Promjer početak": "Durchmesser Anfang", "Promjer kraj": "Durchmesser Ende", "Duljina": "Länge" },
+    units: { "o/min": "U/min", "oktan": "Oktan" }
+  }
+};
+
 /* ===================================================================== */
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const ALL = SECTIONS.flatMap(s => s.fields.map(f => ({ ...f, section: s.title })))
-  .concat([{ key: "napomena", label: "Napomena", type: "text", section: "Slanje" }]);
+const ALL = SECTIONS.flatMap(s => s.fields.filter(f => !f.hintOnly).map(f => ({ ...f, sec: s.id })))
+  .concat([{ key: "napomena", label: "Napomena", sub: "Sve što bi nam moglo pomoći: dosadašnje preinake, problemi, ciljevi.", type: "text", sec: "slanje" }]);
 const BYKEY = Object.fromEntries(ALL.map(f => [f.key, f]));
 
 const load = k => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } };
 const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
 const drop = k => { try { localStorage.removeItem(k); } catch (e) {} };
-const K_DATA = CONFIG.storageKey, K_PEND = CONFIG.storageKey + "-pending";
+const K_DATA = CONFIG.storageKey, K_PEND = CONFIG.storageKey + "-pending", K_LANG = CONFIG.storageKey + "-lang";
+
+/* ---------- Jezik ---------- */
+function pickLang() {
+  const codes = LANGS.map(l => l.code), stored = load(K_LANG);
+  if (codes.includes(stored)) return stored;
+  for (const l of navigator.languages || [navigator.language || ""]) {
+    const c = String(l).slice(0, 2).toLowerCase();
+    if (codes.includes(c)) return c;
+  }
+  return CONFIG.defaultLang;
+}
+let lang = pickLang();
+const tr = () => T[lang] || {};
+function ui(k, vars) {
+  let s = (tr().ui || {})[k] ?? T.hr.ui[k] ?? k;
+  for (const v in vars || {}) s = s.replace("{" + v + "}", vars[v]);
+  return s;
+}
+const fT = (f, p) => { const t = (tr().fields || {})[f.key]; return t && t[p] != null ? t[p] : f[p]; };
+const uT = u => u ? ((tr().units || {})[u] ?? u) : "";
+const gT = s => (tr().grid || {})[s] ?? s;
+const secT = (id, p) => id === "slanje" ? (p === "title" ? ui("send_title") : "")
+  : (((tr().sections || {})[id] || {})[p] ?? (SECTIONS.find(s => s.id === id) || {})[p]);
+const optT = (f, v) => { const i = (f.options || []).indexOf(v), o = fT(f, "options"); return i >= 0 && o && o[i] ? o[i] : v; };
 
 /* ---------- Render ---------- */
 function control(f) {
   const id = "f-" + f.key;
-  const unit = f.unit ? `<span class="unit">${esc(f.unit)}</span>` : "";
+  const unit = f.unit ? `<span class="unit">${esc(uT(f.unit))}</span>` : "";
   const ac = f.auto ? ` autocomplete="${f.auto}"` : ` autocomplete="off"`;
   if (f.type === "select") {
-    return `<div class="inp"><select id="${id}" data-key="${f.key}"><option value="">Odaberite</option>${
-      f.options.map(o => `<option>${esc(o)}</option>`).join("")}</select>${unit}</div>`;
+    return `<div class="inp"><select id="${id}" data-key="${f.key}"><option value="">${esc(ui("choose"))}</option>${
+      f.options.map(o => `<option value="${esc(o)}">${esc(optT(f, o))}</option>`).join("")}</select>${unit}</div>`;
   }
   const isNum = f.type === "num" || f.type === "int";
   const type = f.type === "email" ? "email" : f.type === "tel" ? "tel" : "text";
   const im = f.type === "int" ? ' inputmode="numeric"' : f.type === "num" ? ' inputmode="decimal"' : "";
-  return `<div class="inp"><input id="${id}" type="${type}" data-key="${f.key}"${im}${ac}${isNum ? ' class="num"' : ""}${f.grid ? ` aria-label="${esc(f.label)}"` : ""}>${unit}</div>`;
+  const aria = f.grid ? ` aria-label="${esc(gT(f.grid.row) + ", " + gT(f.grid.col))}"` : "";
+  return `<div class="inp"><input id="${id}" type="${type}" data-key="${f.key}"${im}${ac}${isNum ? ' class="num"' : ""}${aria}>${unit}</div>`;
 }
 
 function renderSection(s) {
-  let html = `<section class="sec" id="sec-${s.id}" data-sec="${s.id}"><h2>${esc(s.title)}</h2>`;
-  if (s.lead) html += `<p class="lead">${esc(s.lead)}</p>`;
+  let html = `<section class="sec" id="sec-${s.id}" data-sec="${s.id}"><h2>${esc(secT(s.id, "title"))}</h2>`;
+  const lead = secT(s.id, "lead");
+  if (lead) html += `<p class="lead">${esc(lead)}</p>`;
   const plain = s.fields.filter(f => !f.grid), grid = s.fields.filter(f => f.grid);
+  // Polja iznad zajedničke upute (hintOnly) čine grupu bez crte između njih
+  const grouped = new Set();
+  plain.forEach((f, i) => { if (f.hintOnly) for (let j = i - (f.covers || 2) + 1; j < i; j++) if (j > 0) grouped.add(plain[j].key); });
   for (const f of plain) {
-    html += `<div class="field" data-field="${f.key}">
-      <label class="lbl" for="f-${f.key}">${esc(f.label)}${f.required ? '<span class="req" aria-hidden="true">*</span>' : ""}${f.sub ? `<span class="sub">${esc(f.sub)}</span>` : ""}</label>
+    const sub = fT(f, "sub"), hint = fT(f, "hint");
+    if (f.hintOnly) {
+      html += `<div class="field wide hint-row"><details class="hint"><summary>${esc(ui(f.how || "how"))}</summary><div class="hb">${hint}</div></details></div>`;
+      continue;
+    }
+    html += `<div class="field${grouped.has(f.key) ? " grouped" : ""}" data-field="${f.key}">
+      <label class="lbl" for="f-${f.key}">${esc(fT(f, "label"))}${f.required ? '<span class="req" aria-hidden="true">*</span>' : ""}${sub ? `<span class="sub">${esc(sub)}</span>` : ""}</label>
       <div class="ctl">${control(f)}<p class="err"></p></div>
-      ${f.hint ? `<details class="hint"><summary>Kako izmjeriti</summary><div class="hb">${f.hint}</div></details>` : ""}
+      ${hint ? `<details class="hint"><summary>${esc(ui("how"))}</summary><div class="hb">${hint}</div></details>` : ""}
     </div>`;
   }
   if (grid.length) {
     const rows = [...new Set(grid.map(f => f.grid.row))], cols = [...new Set(grid.map(f => f.grid.col))];
-    const u = grid[0].unit ? ` (${esc(grid[0].unit)})` : "";
-    html += `<div class="xg" style="--cols:${cols.length}"><div class="xg-row xg-head" aria-hidden="true"><span></span>${cols.map(c => `<span>${esc(c)}</span>`).join("")}</div>`;
+    const u = grid[0].unit ? ` (${esc(uT(grid[0].unit))})` : "";
+    html += `<div class="xg" style="--cols:${cols.length}"><div class="xg-row xg-head" aria-hidden="true"><span></span>${cols.map(c => `<span>${esc(gT(c))}</span>`).join("")}</div>`;
     for (const r of rows) {
-      html += `<div class="xg-row"><div class="xg-rl">${esc(r)}</div>`;
+      html += `<div class="xg-row"><div class="xg-rl">${esc(gT(r))}</div>`;
       for (const c of cols) {
         const f = grid.find(g => g.grid.row === r && g.grid.col === c);
-        html += f ? `<div data-field="${f.key}"><span class="cl">${esc(c)}${u}</span>${control(f)}<p class="err"></p></div>` : "<div></div>";
+        html += f ? `<div data-field="${f.key}"><span class="cl">${esc(gT(c))}${u}</span>${control(f)}<p class="err"></p></div>` : "<div></div>";
       }
       html += `</div>`;
     }
@@ -331,11 +646,24 @@ function renderSection(s) {
   return html + `</section>`;
 }
 
-$("#sections").innerHTML = SECTIONS.map(renderSection).join("");
-const NAVSECS = SECTIONS.map(s => ({ id: s.id, title: s.title, keys: s.fields.map(f => f.key) }))
-  .concat([{ id: "slanje", title: "Slanje", keys: [] }]);
-$("#nav").innerHTML = NAVSECS.map(s =>
-  `<li><a href="#sec-${s.id}" data-nav="${s.id}"><span class="nt"><span>${esc(s.title)}</span>${s.keys.length ? `<span class="nc">0/${s.keys.length}</span>` : ""}</span>${s.keys.length ? '<span class="bar"><i></i></span>' : ""}</a></li>`).join("");
+const NAVSECS = SECTIONS.map(s => ({ id: s.id, keys: s.fields.filter(f => !f.hintOnly).map(f => f.key) }))
+  .concat([{ id: "slanje", keys: [] }]);
+
+/* Označava trenutni dio u izborniku */
+const io = new IntersectionObserver(entries => {
+  for (const en of entries) if (en.isIntersecting) {
+    document.querySelectorAll(".nav a").forEach(a => a.classList.toggle("on", a.dataset.nav === en.target.dataset.sec));
+    const on = $(".nav a.on"); if (on && innerWidth < 960) on.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+}, { rootMargin: "-30% 0px -60% 0px" });
+
+function renderForm() {
+  $("#sections").innerHTML = SECTIONS.map(renderSection).join("");
+  $("#nav").innerHTML = NAVSECS.map(s =>
+    `<li><a href="#sec-${s.id}" data-nav="${s.id}"><span class="nt"><span>${esc(secT(s.id, "title"))}</span>${s.keys.length ? `<span class="nc">0/${s.keys.length}</span>` : ""}</span>${s.keys.length ? '<span class="bar"><i></i></span>' : ""}</a></li>`).join("");
+  io.disconnect();
+  document.querySelectorAll(".sec").forEach(s => io.observe(s));
+}
 
 /* ---------- State ---------- */
 const inputs = () => [...document.querySelectorAll("[data-key]")];
@@ -357,34 +685,66 @@ function updateProgress() {
   }
 }
 
-let saveTimer;
+let saveTimer, savedAt = null;
+function showSaved() {
+  $("#saved").textContent = savedAt ? ui("saved", { t: savedAt.toLocaleTimeString(ui("locale"), { hour: "2-digit", minute: "2-digit" }) }) : "";
+}
 function persist() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const ok = save(K_DATA, { answers: getAnswers(), consent: $("#consent").checked, t: Date.now() });
-    $("#saved").textContent = ok ? "Spremljeno na ovom uređaju u " + new Date().toLocaleTimeString("hr-HR", { hour: "2-digit", minute: "2-digit" }) + "." : "";
+    savedAt = ok ? new Date() : null; showSaved();
   }, 400);
 }
 
 /* ---------- Validation ---------- */
 const NUM = /^-?\d+([.,]\d+)?$/, INT = /^\d+$/, MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-function check(el) {
+const TEL = v => /^\+?[\d\s\/().-]+$/.test(v) && v.replace(/\D/g, "").length >= 6;
+/* Telefon ili e-mail: barem jedno je obavezno. Provjerava se tek nakon prvog pokušaja slanja. */
+const CONTACT = ["telefon", "email"];
+let contactChecked = false;
+const hasContact = () => CONTACT.some(k => $("#f-" + k).value.trim());
+function check(el, onlyClear) {
   const f = BYKEY[el.dataset.key]; if (!f) return true;
   const v = el.value.trim(); let msg = "";
-  if (f.required && !v) msg = "Ovo polje je obavezno.";
-  else if (v && f.type === "num" && !NUM.test(v)) msg = "Upišite broj, npr. 86,5";
-  else if (v && f.type === "int" && !INT.test(v)) msg = "Upišite cijeli broj.";
-  else if (v && f.type === "email" && !MAIL.test(v)) msg = "Provjerite e-mail adresu.";
+  if (f.required && !v) msg = ui("e_req");
+  else if (v && f.type === "num" && !NUM.test(v)) msg = ui("e_num");
+  else if (v && f.type === "int" && !INT.test(v)) msg = ui("e_int");
+  else if (v && f.type === "email" && !MAIL.test(v)) msg = ui("e_mail");
+  else if (v && f.type === "tel" && !TEL(v)) msg = ui("e_tel");
+  else if (!v && CONTACT.includes(f.key) && contactChecked && !hasContact()) msg = ui("e_contact");
+  if (onlyClear && msg && !v) return false;
+  if (onlyClear) msg = "";   // dok korisnik tipka, greška se samo briše; format se provjerava kad napusti polje
   const box = el.closest("[data-field]");
   if (box) { box.classList.toggle("bad", !!msg); const e = $(".err", box); if (e) e.textContent = msg; }
   return !msg;
 }
 
 /* ---------- Status ---------- */
-function status(kind, text) {
+let lastStatus = null;
+function status(kind, key, vars) {
+  lastStatus = kind ? { kind, key, vars } : null;
   const s = $("#status");
   s.className = "status" + (kind ? " show " + kind : "");
-  s.textContent = text || "";
+  s.textContent = kind ? ui(key, vars) : "";
+}
+
+/* ---------- Promjena jezika ---------- */
+function setLang(code) {
+  if (!T[code]) return;
+  const a = getAnswers();
+  lang = code; save(K_LANG, code);
+  document.documentElement.lang = code;
+  document.title = ui("title") + " · " + CONFIG.shop;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = ui(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el => el.setAttribute("aria-label", ui(el.dataset.i18nAria)));
+  const n = BYKEY.napomena;
+  $("#lbl-napomena").innerHTML = esc(fT(n, "label")) + `<span class="sub">${esc(fT(n, "sub"))}</span>`;
+  renderForm();
+  setAnswers(a); updateProgress();
+  document.querySelectorAll("#langs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === code)));
+  if (lastStatus) status(lastStatus.kind, lastStatus.key, lastStatus.vars);
+  showSaved();
 }
 
 /* ---------- Payload / CSV ---------- */
@@ -393,23 +753,24 @@ function toNumber(f, v) {
   return v;
 }
 function buildPayload() {
-  const a = getAnswers(), answers = {};
+  const a = getAnswers(), answers = { jezik: lang };
   for (const k in a) if (BYKEY[k]) answers[k] = toNumber(BYKEY[k], a[k]);
   return {
     id: (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2)),
     createdAt: new Date().toISOString(),
     website: $("#website").value,
-    fields: ALL.map(f => ({ key: f.key, label: f.label + (f.unit ? ` (${f.unit})` : "") })),
+    fields: [{ key: "jezik", label: "Jezik" }].concat(ALL.map(f => ({ key: f.key, label: f.label + (f.unit ? ` (${f.unit})` : "") }))),
     answers
   };
 }
 function downloadCSV() {
   const a = getAnswers(), q = s => `"${String(s).replace(/"/g, '""')}"`;
-  const rows = [["Dio", "Podatak", "Vrijednost", "Jedinica"]]
-    .concat(ALL.map(f => [f.section, f.label, a[f.key] || "", f.unit || ""]));
-  const csv = "\uFEFF" + rows.map(r => r.map(q).join(";")).join("\r\n");
+  const label = f => f.grid ? gT(f.grid.row) + ", " + gT(f.grid.col) : fT(f, "label");
+  const rows = [ui("csv_head")]
+    .concat(ALL.map(f => [secT(f.sec, "title"), label(f), a[f.key] ? optT(f, a[f.key]) : "", uT(f.unit)]));
+  const csv = "﻿" + rows.map(r => r.map(q).join(";")).join("\r\n");
   const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const name = "podaci-o-motoru" + (a.oznaka_motora ? "-" + a.oznaka_motora.replace(/[^\w-]+/g, "_") : "") + ".csv";
+  const name = ui("csv_name") + (a.oznaka_motora ? "-" + a.oznaka_motora.replace(/[^\w-]+/g, "_") : "") + ".csv";
   const link = Object.assign(document.createElement("a"), { href: url, download: name });
   document.body.appendChild(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
@@ -432,28 +793,32 @@ async function trySendPending(auto) {
   const p = load(K_PEND);
   if (!p || sending) return;
   sending = true; $("#send").disabled = true;
-  if (!auto) status("warn", "Šaljem…");
+  if (!auto) status("warn", "s_sending");
   try {
     await send(p);
-    drop(K_PEND);
+    drop(K_PEND); status();
     $("#form").hidden = true; $("#done").hidden = false;
     $("#done").scrollIntoView({ behavior: "smooth" });
   } catch (e) {
     if (e.fatal && e.message === "noendpoint") {
       drop(K_PEND);
-      status("bad", "Obrazac još nije povezan s tablicom za primanje podataka. Preuzmite kopiju (CSV) i pošaljite nam je e-mailom.");
+      status("bad", "s_noend");
     } else if (e.fatal) {
       drop(K_PEND);
-      status("bad", "Slanje nije uspjelo (" + e.message + "). Pokušajte ponovno ili preuzmite kopiju (CSV) i pošaljite nam je e-mailom.");
+      status("bad", "s_fail", { e: e.message });
     } else {
-      status("warn", "Nema internetske veze. Podaci su spremljeni i poslat će se automatski čim se veza vrati. Ostavite ovu stranicu otvorenom ili je kasnije ponovno otvorite.");
+      status("warn", "s_offline");
     }
   } finally { sending = false; $("#send").disabled = false; }
 }
 
 /* ---------- Events ---------- */
 $("#form").addEventListener("input", e => {
-  if (e.target.dataset.key) { updateProgress(); persist(); if (e.target.closest(".bad")) check(e.target); }
+  if (e.target.dataset.key) {
+    updateProgress(); persist();
+    if (CONTACT.includes(e.target.dataset.key)) CONTACT.forEach(k => { const el = $("#f-" + k); if (el.closest(".bad")) check(el, el === e.target); });
+    else if (e.target.closest(".bad")) check(e.target);
+  }
   if (e.target.id === "consent") { persist(); $("#consentRow").classList.remove("bad"); }
 });
 $("#form").addEventListener("change", e => { if (e.target.dataset.key) { updateProgress(); persist(); } });
@@ -462,16 +827,11 @@ $("#form").addEventListener("focusout", e => { if (e.target.dataset.key) check(e
 $("#form").addEventListener("submit", e => {
   e.preventDefault();
   let first = null;
+  contactChecked = true;
   for (const el of inputs()) if (!check(el) && !first) first = el;
-  const a = getAnswers();
-  if (!first && !a.telefon && !a.email) {
-    const el = $("#f-telefon"), box = el.closest("[data-field]");
-    box.classList.add("bad"); $(".err", box).textContent = "Upišite telefon ili e-mail.";
-    first = el;
-  }
   if (!first && !$("#consent").checked) { $("#consentRow").classList.add("bad"); first = $("#consent"); }
   if (first) {
-    status("bad", "Provjerite označena polja.");
+    status("bad", "s_check");
     first.focus({ preventScroll: true }); first.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
@@ -482,30 +842,40 @@ $("#form").addEventListener("submit", e => {
 $("#dl").addEventListener("click", downloadCSV);
 $("#dl2").addEventListener("click", downloadCSV);
 $("#newForm").addEventListener("click", () => {
+  contactChecked = false;
   drop(K_DATA); setAnswers({}); $("#consent").checked = false;
-  updateProgress(); status(); $("#saved").textContent = "";
+  updateProgress(); status(); savedAt = null; showSaved();
   $("#done").hidden = true; $("#form").hidden = false; window.scrollTo(0, 0);
 });
 window.addEventListener("online", () => trySendPending(true));
 window.addEventListener("beforeunload", e => { if (load(K_PEND)) { e.preventDefault(); e.returnValue = ""; } });
 
-/* Highlight current section in nav */
-const io = new IntersectionObserver(entries => {
-  for (const en of entries) if (en.isIntersecting) {
-    document.querySelectorAll(".nav a").forEach(a => a.classList.toggle("on", a.dataset.nav === en.target.dataset.sec));
-    const on = $(".nav a.on"); if (on && innerWidth < 960) on.scrollIntoView({ block: "nearest", inline: "center" });
-  }
-}, { rootMargin: "-30% 0px -60% 0px" });
-document.querySelectorAll(".sec").forEach(s => io.observe(s));
+$("#langs").innerHTML = LANGS.map(l =>
+  `<button type="button" data-lang="${l.code}" lang="${l.code}" title="${esc(l.name)}" aria-label="${esc(l.name)}" aria-pressed="false"><img src="${esc(l.flag)}" alt=""></button>`).join("");
+$("#langs").addEventListener("click", e => { const b = e.target.closest("button[data-lang]"); if (b) setLang(b.dataset.lang); });
 
 /* ---------- Start ---------- */
+setLang(lang);
 const saved = load(K_DATA);
 if (saved) { setAnswers(saved.answers); $("#consent").checked = !!saved.consent; }
 updateProgress();
 if (load(K_PEND)) {
-  status("warn", "Imate neposlane podatke. Šaljem ih ponovno…");
+  status("warn", "s_pending");
   trySendPending(true);
 }
+// Klik na sliku u uputi otvara je uvećanu; zatvara se klikom, tipkom X ili Esc
+const lb = $("#lb"), lbImg = lb.querySelector("img");
+let lbBack = null;
+function closeLb() { if (lb.hidden) return; lb.hidden = true; lbImg.removeAttribute("src"); document.body.style.overflow = ""; if (lbBack) lbBack.focus(); }
+document.addEventListener("click", e => {
+  const img = e.target.closest(".hint .hb img");
+  if (!img) return;
+  lbImg.src = img.src; lbImg.alt = img.alt; lbBack = img;
+  lb.hidden = false; document.body.style.overflow = "hidden";
+  $("#lb-close").focus();
+});
+lb.addEventListener("click", closeLb);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeLb(); });
 if ("serviceWorker" in navigator && location.protocol === "https:") {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
